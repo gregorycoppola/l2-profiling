@@ -262,11 +262,15 @@ function loadKeys() {
   var buffer = []
   for (var i = 1; i < lines.length; i++) {
     try {
-      const json = JSON.parse(lines[i])
+      const line = lines[i].trim();
+      if (line.length == 0) {
+        continue;
+      }
+      const json = JSON.parse(line)
       buffer.push(json.keyInfo)
   
     } catch (error) {
-      info_log('error in loadKeys', {error})
+      info_log(`error in loadKeys: i ${i}, line: "${line}"`)
     }
   }
   return buffer
@@ -284,11 +288,9 @@ async function main() {
   }
 
   const l1_observer = new Observer(60303)
-  console.log({l1_observer})
   const l1_server = l1_observer.makeServer()
 
   const l2_observer = new Observer(60304)
-  console.log({l2_observer})
   const l2_server = l2_observer.makeServer()
 
   await sleep(`wait to start`, 5000)

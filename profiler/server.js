@@ -32,7 +32,7 @@ export class Observer {
   makeServer() {
     const app = express()
     app.use(express.json({limit: '50mb'}));
-    app.use(express.urlencoded({limit: '50mb'}));
+    app.use(express.urlencoded({extended: true, limit: '50mb'}));
   
     var blocks_seen = 0
   
