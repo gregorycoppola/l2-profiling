@@ -344,7 +344,7 @@ async function main() {
         transactionsOutstanding += 1
       }
     }
-    info_log(`processing update: transactionsProcessed ${transactionsProcessed} transactionsOutstanding ${transactionsOutstanding}`)
+    // info_log(`processing update: transactionsProcessed ${transactionsProcessed} transactionsOutstanding ${transactionsOutstanding}`)
     await sleep(`endless loop`, 10000)
 
     if (transactionsProcessed == mintIds.length) {
