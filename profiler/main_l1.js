@@ -98,7 +98,7 @@ async function mintNft(nonce) {
 }
 
 async function hyperchainMintNft(keyInfo, id, nonce) {
-  const network = new StacksTestnet({url: L2_URL});
+  const network = new StacksTestnet({url: L1_URL});
   const senderKey = keyInfo.privateKey;
   const txOptions = {
       contractAddress: userAddr,
@@ -232,7 +232,11 @@ async function getNextNonce(principal, network_url) {
 
 /// Wait for the stacks height to be positive.
 async function waitForStacksHeight(network_url) {
-  info_log("waiting for: the L2 to make a first block")
+  await waitForStacksHeight_internal(network_url, 1)
+}
+
+async function waitForStacksHeight_internal(network_url, min_height) {
+  info_log(`waiting for: the L2 to make a first block ${min_height}`)
   const query = `${network_url}/v2/info`
   while (true) {
     try {
@@ -240,7 +244,7 @@ async function waitForStacksHeight(network_url) {
       const result = await axios.get(query)
       const stacks_tip_height = result.data.stacks_tip_height
     
-      if (stacks_tip_height > 0) {
+      if (stacks_tip_height >= min_height) {
         info_log("found: the L2 to make a first block")
         return
       }
@@ -295,40 +299,42 @@ async function main() {
   const userPublish0id = await publishContract(userKey, 'trait-standards', '../contracts/trait-standards.clar', L1_URL, 0)
   const userPublish1id = await publishContract(userKey, 'simple-nft-l2', '../contracts/simple-nft.clar', L1_URL, 1)
 
-  await waitForTransaction(l1_observer, userPublish0id, 'user0')
-  await waitForTransaction(l1_observer, userPublish1id, 'user1')
+  // await waitForTransaction(l1_observer, userPublish0id, 'user0')
+  // await waitForTransaction(l1_observer, userPublish1id, 'user1')
 
-  // var mintIds = []
-  // info_log('start submitting mints', {num_mints})
-  // l2_observer.stop_showing_mempool_alerts()
-  // for (var i = 0; i < num_mints; i++) {
-  //   const keyInfo = keyInfos[i]
-  //   if (!keyInfo) {
-  //     info_log(`problem with key ${i}, keyInfo is ${keyInfo}`)
-  //     exit(1)
-  //   }
-  //   const mintTxid = await hyperchainMintNft(keyInfo, i, 0)
-  //   mintIds.push(mintTxid)
-  // }
+  await waitForStacksHeight_internal(L1_URL, 5)
 
-  // info_log('start collecting mints', {num_mints})
-  // while (true) {
-  //   const finished_transactions = l2_observer.transactions_id_set()
-  //   var transactionsProcessed = 0
-  //   var transactionsOutstanding = 0
-  //   for (const mintId of mintIds) {
-  //     if (finished_transactions.has(mintId)) {
-  //       transactionsProcessed += 1
-  //     } else {
-  //       transactionsOutstanding += 1
-  //     }
-  //   }
-  //   // info_log(`processing update: transactionsProcessed ${transactionsProcessed} transactionsOutstanding ${transactionsOutstanding}`)
-  //   await sleep(`endless loop`, 10000)
+  var mintIds = []
+  info_log('start submitting mints', {num_mints})
+  l2_observer.stop_showing_mempool_alerts()
+  for (var i = 0; i < num_mints; i++) {
+    const keyInfo = keyInfos[i]
+    if (!keyInfo) {
+      info_log(`problem with key ${i}, keyInfo is ${keyInfo}`)
+      exit(1)
+    }
+    const mintTxid = await hyperchainMintNft(keyInfo, i, 0)
+    mintIds.push(mintTxid)
+  }
 
-  //   if (transactionsProcessed == mintIds.length) {
-  //     break
-  //   }
+  info_log('start collecting mints', {num_mints})
+  while (true) {
+    const finished_transactions = l2_observer.transactions_id_set()
+    var transactionsProcessed = 0
+    var transactionsOutstanding = 0
+    for (const mintId of mintIds) {
+      if (finished_transactions.has(mintId)) {
+        transactionsProcessed += 1
+      } else {
+        transactionsOutstanding += 1
+      }
+    }
+    // info_log(`processing update: transactionsProcessed ${transactionsProcessed} transactionsOutstanding ${transactionsOutstanding}`)
+    await sleep(`endless loop`, 10000)
+
+    if (transactionsProcessed == mintIds.length) {
+      break
+    }
 
   console.log("Exiting the process.")
   exit(1)
