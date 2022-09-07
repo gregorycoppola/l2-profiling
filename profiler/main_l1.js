@@ -306,7 +306,6 @@ async function main() {
 
   var mintIds = []
   info_log('start submitting mints', {num_mints})
-  l2_observer.stop_showing_mempool_alerts()
   for (var i = 0; i < num_mints; i++) {
     const keyInfo = keyInfos[i]
     if (!keyInfo) {
@@ -316,25 +315,6 @@ async function main() {
     const mintTxid = await hyperchainMintNft(keyInfo, i, 0)
     mintIds.push(mintTxid)
   }
-
-  info_log('start collecting mints', {num_mints})
-  while (true) {
-    const finished_transactions = l2_observer.transactions_id_set()
-    var transactionsProcessed = 0
-    var transactionsOutstanding = 0
-    for (const mintId of mintIds) {
-      if (finished_transactions.has(mintId)) {
-        transactionsProcessed += 1
-      } else {
-        transactionsOutstanding += 1
-      }
-    }
-    // info_log(`processing update: transactionsProcessed ${transactionsProcessed} transactionsOutstanding ${transactionsOutstanding}`)
-    await sleep(`endless loop`, 10000)
-
-    if (transactionsProcessed == mintIds.length) {
-      break
-    }
 
   console.log("Exiting the process.")
   exit(1)
