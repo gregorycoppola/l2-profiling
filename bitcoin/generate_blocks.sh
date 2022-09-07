@@ -4,7 +4,7 @@
 
 echo "Generating a block every minute. Press [CTRL+C] to stop.."
 
-bitcoin-cli createwallet wallet6
+bitcoin-cli createwallet wallet7
 address=`bitcoin-cli getnewaddress`
 
 while :
