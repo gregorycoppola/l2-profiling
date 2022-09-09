@@ -1,1 +1,1 @@
-bitcoind -port=18444 -rpcport=18443
+bitcoind -port=18442 -rpcport=18443
