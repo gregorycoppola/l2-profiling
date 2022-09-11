@@ -85,14 +85,13 @@ function spawn_l1() {
 }
 
 async function main() {
-  const child1 = spawn_bitcoind()
+  const _child1 = spawn_bitcoind()
 
   console.log('sleeping 1')
   await sleep('wait to start', 2500)
   console.log('sleeping 2')
 
-  const child2 = spawn_l1()
-
+  const _child2 = spawn_l1()
 
   const NUM_BLOCKS = 10
   for (let i = 0; i < NUM_BLOCKS; i++) { 
