@@ -1,29 +1,45 @@
-// const { exec } = require('child_process');
-
-// console.log('start')
-
-// exec('/home/greg/bitcoin-22.0/bin/bitcoind -port=18442 -rpcport=18443', (error, stdout, stderr) => {
-//   if (error) {
-//     console.error(`error: ${error.message}`);
-//   }
-
-//   if (stderr) {
-//     console.error(`stderr: ${stderr}`);
-//   }
-
-//   console.log(`stdout:\n${stdout}`);
-// });
-
-// console.log('end')
-
 const { spawn } = require('child_process');
+const axios = require('axios')
 
-const child = spawn('bitcoind', ['-port=18442', '-rpcport=18443']);
+async function sleep(reason, ms) {
+  const promise = new Promise((resolve) => {
+      // info_log(`start to sleep for: ${reason}`)
+      setTimeout(resolve, ms);
+  });
 
-child.stdout.on('data', data => {
-  console.log(`stdout:\n${data}`);
-});
+  await promise
+}
 
-child.stderr.on('data', data => {
-  console.error(`stderr: ${data}`);
-});
+async function generate_block() {
+
+  console.log('generate_block')
+  const generate_result = await axios.post('localhost:18443', {
+    method: "generate",
+    params: [1],
+    id: 0,
+    jsonrpc: '2.0',
+  })
+
+  console.log({generate_block})
+}
+
+async function main() {
+
+  const child = spawn('bitcoind', ['-port=18442', '-rpcport=18443']);
+
+  child.stdout.on('data', data => {
+    console.log(`stdout:\n${data}`);
+  });
+
+  child.stderr.on('data', data => {
+    console.error(`stderr: ${data}`);
+  });
+
+  console.log('sleeping 1')
+  await sleep('wait to start', 2000)
+  console.log('sleeping 2')
+
+  // generate_block()
+}
+
+main()
