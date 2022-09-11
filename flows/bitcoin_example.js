@@ -13,20 +13,26 @@ async function sleep(reason, ms) {
 async function generate_block() {
 
   console.log('generate_block')
-  const generate_result = await axios.post('http://localhost:18443/', {
-    method: "generate",
-    params: [1],
-    id: 0,
-    jsonrpc: '2.0',
-  },
-  {
-    auth: {
-      username: 'username',
-      password: 'password',  
-    }
-  })
+  try {
+    const generate_result = await axios.post('http://127.0.0.1:18443/', {
+      method: "generatetoaddress",
+      params: [1, 'mkHS9ne12qx9pS9VojpwU5xtRd4T7X7ZUt'],  // random BTC address
+      id: 'curltest',
+      jsonrpc: '2.0',
+    },
+    {
+      auth: {
+        username: 'username',
+        password: 'password',  
+      }
+    })
+    console.log({generate_result})
 
-  console.log({generate_block})
+  }
+  catch (error) {
+
+    console.log({error, response:error.response, inner_error: error.response.data.error})
+  }
 }
 
 async function main() {
@@ -42,10 +48,18 @@ async function main() {
   });
 
   console.log('sleeping 1')
-  await sleep('wait to start', 2000)
+  await sleep('wait to start', 2500)
   console.log('sleeping 2')
 
-  generate_block()
+  const NUM_BLOCKS = 10
+  for (let i = 0; i < NUM_BLOCKS; i++) { 
+    console.log("create block", {i})
+    generate_block()
+
+    const sleepTime = 4000
+    console.log(`sleep for ${sleepTime} ms`)
+    await sleep('wait to start', sleepTime)
+  }
 }
 
 main()
