@@ -13,11 +13,17 @@ async function sleep(reason, ms) {
 async function generate_block() {
 
   console.log('generate_block')
-  const generate_result = await axios.post('localhost:18443', {
+  const generate_result = await axios.post('http://localhost:18443/', {
     method: "generate",
     params: [1],
     id: 0,
     jsonrpc: '2.0',
+  },
+  {
+    auth: {
+      username: 'username',
+      password: 'password',  
+    }
   })
 
   console.log({generate_block})
@@ -39,7 +45,7 @@ async function main() {
   await sleep('wait to start', 2000)
   console.log('sleeping 2')
 
-  // generate_block()
+  generate_block()
 }
 
 main()
