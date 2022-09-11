@@ -26,7 +26,7 @@ async function generate_block() {
         password: 'password',  
       }
     })
-    console.log({generate_result})
+    // console.log({generate_result})
 
   }
   catch (error) {
@@ -35,17 +35,22 @@ async function generate_block() {
   }
 }
 
-async function main() {
-
+function spawn_bitcoind() {
   const child = spawn('bitcoind', ['-port=18442', '-rpcport=18443']);
 
   child.stdout.on('data', data => {
-    console.log(`stdout:\n${data}`);
+    const trimmed = data.toString().trim()
+    console.log(`${trimmed}`);
   });
 
   child.stderr.on('data', data => {
     console.error(`stderr: ${data}`);
   });
+
+  return child
+}
+async function main() {
+  const child = spawn_bitcoind()
 
   console.log('sleeping 1')
   await sleep('wait to start', 2500)
