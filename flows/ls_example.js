@@ -1,15 +1,11 @@
-const { exec } = require('child_process');
+const { spawn } = require('child_process');
 
-exec('ls -lh', (error, stdout, stderr) => {
-  if (error) {
-    console.error(`error: ${error.message}`);
-    return;
-  }
+const child = spawn('find', ['.']);
 
-  if (stderr) {
-    console.error(`stderr: ${stderr}`);
-    return;
-  }
+child.stdout.on('data', data => {
+  console.log(`stdout:\n${data}`);
+});
 
-  console.log(`stdout:\n${stdout}`);
+child.stderr.on('data', data => {
+  console.error(`stderr: ${data}`);
 });
