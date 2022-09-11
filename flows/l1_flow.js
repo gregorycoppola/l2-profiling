@@ -46,10 +46,15 @@ async function publishContract(senderKey, contractName, contractFilename, networ
     anchorMode: transactions.AnchorMode.Any, fee: 50000, nonce
   });
   const network = new stacks_network.StacksTestnet({url: networkUrl});
-  const txid = await transactions.broadcastTransaction(
-    transaction, network
-  )
-  return '0x' + txid.txid
+
+  try {
+    const txid = await transactions.broadcastTransaction(
+      transaction, network
+    )
+    return '0x' + txid.txid  
+  } catch (error) {
+    console.log({error})
+  }
 }
 
 async function generate_block() {
@@ -78,7 +83,10 @@ async function generate_block() {
 }
 
 function spawn_bitcoind() {
-  const child = spawn('bitcoind', ['-port=18442', '-rpcport=18443']);
+  const child = spawn(
+    'bitcoind',
+    ['-port=18442', '-rpcport=18443']
+    );
 
   child.stdout.on('data', data => {
     const trimmed = data.toString().trim()
@@ -97,7 +105,12 @@ function spawn_l1() {
     [
       'start',
       '--config=/home/greg/main1/testnet/stacks-node/conf/mocknet-miner-conf.toml',
-    ]
+    ],
+    {
+      env: {
+        STACKS_LOG_DEBUG: 0,
+      }
+    },
   );
 
   child.stdout.on('data', data => {
@@ -137,7 +150,7 @@ async function main() {
   // send the transactions
   const userKey = '753b7cc01a1a2e86221266a154af739463fce51219d97e4f856cd7200c3bd2a601'
   const userAddr = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM'
-  const L1_URL = "http://localhost:18443"
+  const L1_URL = "http://localhost:20443"
   const userPublish0id = await publishContract(userKey, 'trait-standards', '../contracts/trait-standards.clar', L1_URL, 0)
   const userPublish1id = await publishContract(userKey, 'simple-nft', '../contracts/simple-nft.clar', L1_URL, 1)
   
