@@ -1,6 +1,8 @@
 const { spawn } = require('child_process');
 const axios = require('axios')
 
+const bitcoind_binary = process.argv[2]
+
 async function sleep(reason, ms) {
   const promise = new Promise((resolve) => {
       // info_log(`start to sleep for: ${reason}`)
@@ -36,7 +38,7 @@ async function generate_block() {
 }
 
 function spawn_bitcoind() {
-  const child = spawn('bitcoind', ['-port=18442', '-rpcport=18443']);
+  const child = spawn(bitcoind_binary, ['-port=18442', '-rpcport=18443']);
 
   child.stdout.on('data', data => {
     const trimmed = data.toString().trim()
