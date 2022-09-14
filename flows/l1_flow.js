@@ -166,6 +166,8 @@ async function main() {
   await waitForStacksHeight(L1_URL)
 
 
+  process.exit(0)
+
   // // Loop to make the blocks
   // for (let i = 0; i < 2; i++) { 
   //   console.log("create block", {i})
