@@ -1,22 +1,32 @@
-const { spawn } = require('child_process');
-const axios = require('axios')
+// const { spawn } = require('child_process');
+import {spawn} from 'child_process';
+// const axios = require('axios')
+import { default as axios } from 'axios';
+import { readFileSync } from 'fs';
 
-const fs = require('fs')
+import {
+  info_log,
+} from './logger.js';
 
+
+import {
+  Observer,
+} from './observer.js';
+// const fs = require('fs')
+const bitcoind_binary = process.argv[2]
+
+// const observer = require('./observer.js')
 // import {
-//   AnchorMode,
-//   makeContractCall,
-//   ,
-//   broadcastTransaction,
-//   contractPrincipalCV,
-//   standardPrincipalCV,
-//   stringAsciiCV,
-//   uintCV,
-// } from '@stacks/transactions';
+//   Observer,
+// } from './observer.js';
 
-// import { StacksTestnet } from '@stacks/network';
-const stacks_network = require('@stacks/network')
-const transactions = require('@stacks/transactions')
+import {
+  default as transactions
+} from '@stacks/transactions';
+
+import { default as stacks_network } from '@stacks/network';
+// const stacks_network = require('@stacks/network')
+// const transactions = require('@stacks/transactions')
 async function sleep(reason, ms) {
   const promise = new Promise((resolve) => {
       // info_log(`start to sleep for: ${reason}`)
@@ -78,27 +88,7 @@ async function generate_block() {
 }
 
 function spawn_bitcoind() {
-  const child = spawn('bitcoind', ['-port=18442', '-rpcport=18443']);
-
-  child.stdout.on('data', data => {
-    const trimmed = data.toString().trim()
-    console.log(color.yellow + `${trimmed}`);
-  });
-
-  child.stderr.on('data', data => {
-    console.error(`${data}`);
-  });
-
-  return child
-}
-
-function spawn_l1() {
-  const child = spawn('/home/greg/main1/target/release/stacks-node',
-    [
-      'start',
-      '--config=/home/greg/main1/testnet/stacks-node/conf/mocknet-miner-conf.toml',
-    ]
-  );
+  const child = spawn(bitcoind_binary, ['-port=18442', '-rpcport=18443']);
 
   child.stdout.on('data', data => {
     const trimmed = data.toString().trim()
@@ -113,6 +103,50 @@ function spawn_l1() {
   return child
 }
 
+function spawn_l1() {
+  const child = spawn('/Users/greg/main1/target/release/stacks-node', ['start', '--config=/Users/greg/main1/testnet/stacks-node/conf/mocknet-miner-conf.toml']);
+
+  child.stdout.on('data', data => {
+    const trimmed = data.toString().trim()
+    console.log(`${trimmed}`);
+  });
+
+  child.stderr.on('data', data => {
+    const trimmed = data.toString().trim()
+    console.log(color.blue + `${trimmed}`);
+  });
+
+  return child
+}
+
+/// Wait for the stacks height to be positive.
+async function waitForStacksHeight(network_url) {
+  await waitForStacksHeight_internal(network_url, 1)
+}
+
+async function waitForStacksHeight_internal(network_url, min_height) {
+  info_log(`waiting for: the L2 to make a first block ${min_height}`)
+  const query = `${network_url}/v2/info`
+  while (true) {
+    try {
+
+      const result = await axios.get(query)
+      const stacks_tip_height = result.data.stacks_tip_height
+    
+      if (stacks_tip_height >= min_height) {
+        info_log("found: the L2 to make a first block")
+        return
+      }
+
+    } catch (error) {
+      console.log('caught error:', {error})
+    }
+
+    await sleep(`wait for stacks height`, 12000)
+
+  }
+}
+
 async function main() {
   // bitcoind
   const _child1 = spawn_bitcoind()
@@ -124,33 +158,41 @@ async function main() {
   // L1
   const _child2 = spawn_l1()
 
-  // Loop to make the blocks
-  for (let i = 0; i < 2; i++) { 
-    console.log("create block", {i})
-    generate_block()
+  const l1_observer = new Observer(60303)
+  const l1_server = l1_observer.makeServer()
+  
+  const L1_URL = "http://localhost:20443"
 
-    const sleepTime = 10000
-    console.log(`sleep for ${sleepTime} ms`)
-    await sleep('wait to start', sleepTime)
-  }
+  await waitForStacksHeight(L1_URL)
 
-  // send the transactions
-  const userKey = '753b7cc01a1a2e86221266a154af739463fce51219d97e4f856cd7200c3bd2a601'
-  const userAddr = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM'
-  const L1_URL = "http://localhost:18443"
-  const userPublish0id = await publishContract(userKey, 'trait-standards', '../contracts/trait-standards.clar', L1_URL, 0)
-  const userPublish1id = await publishContract(userKey, 'simple-nft', '../contracts/simple-nft.clar', L1_URL, 1)
+
+  // // Loop to make the blocks
+  // for (let i = 0; i < 2; i++) { 
+  //   console.log("create block", {i})
+  //   generate_block()
+
+  //   const sleepTime = 10000
+  //   console.log(`sleep for ${sleepTime} ms`)
+  //   await sleep('wait to start', sleepTime)
+  // }
+
+  // // send the transactions
+  // const userKey = '753b7cc01a1a2e86221266a154af739463fce51219d97e4f856cd7200c3bd2a601'
+  // const userAddr = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM'
+  // const L1_URL = "http://localhost:18443"
+  // const userPublish0id = await publishContract(userKey, 'trait-standards', '../contracts/trait-standards.clar', L1_URL, 0)
+  // const userPublish1id = await publishContract(userKey, 'simple-nft', '../contracts/simple-nft.clar', L1_URL, 1)
   
 
-    // Loop to make the blocks
-    for (let i = 0; i < 10; i++) { 
-      console.log("create block", {i})
-      generate_block()
+  //   // Loop to make the blocks
+  //   for (let i = 0; i < 10; i++) { 
+  //     console.log("create block", {i})
+  //     generate_block()
   
-      const sleepTime = 10000
-      console.log(`sleep for ${sleepTime} ms`)
-      await sleep('wait to start', sleepTime)
-    }
+  //     const sleepTime = 10000
+  //     console.log(`sleep for ${sleepTime} ms`)
+  //     await sleep('wait to start', sleepTime)
+  //   }
   
 }
 
