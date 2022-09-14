@@ -110,7 +110,7 @@ function spawn_l1() {
     ],
     {
       env: {
-        STACKS_LOG_DEBUG: 0,
+        STACKS_LOG_DEBUG: 1,
       }
     },
   );
@@ -165,7 +165,7 @@ async function main() {
   console.log('sleeping 2')
 
   // L1
-  // const _child2 = spawn_l1()
+  const _child2 = spawn_l1()
 
   const l1_observer = new Observer(60303)
   const l1_server = l1_observer.makeServer()
@@ -207,7 +207,6 @@ async function main() {
       await sleep('wait to start', sleepTime)
     }
   
-
     process.exit(0)
 }
 
