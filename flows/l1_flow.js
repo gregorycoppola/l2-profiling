@@ -106,7 +106,7 @@ function spawn_l1() {
   const child = spawn('/home/greg/main1/target/release/stacks-node',
     [
       'start',
-      '--config=/home/greg/main1/testnet/stacks-node/conf/mocknet-miner-conf.toml',
+      '--config=conf/regtest-miner-conf.toml',
     ],
     {
       env: {
