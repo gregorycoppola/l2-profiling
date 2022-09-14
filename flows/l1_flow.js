@@ -172,20 +172,22 @@ async function main() {
   
   const L1_URL = "http://localhost:20443"
 
+  // Loop to make the blocks
+  for (let i = 0; i < 2; i++) { 
+    console.log("create block", {i})
+    generate_block()
+
+    const sleepTime = 4000
+    console.log(`sleep for ${sleepTime} ms`)
+    await sleep('wait to start', sleepTime)
+  }
+
   await waitForStacksHeight(L1_URL)
 
 
-  process.exit(0)
+  // process.exit(0)
 
-  // // Loop to make the blocks
-  // for (let i = 0; i < 2; i++) { 
-  //   console.log("create block", {i})
-  //   generate_block()
 
-  //   const sleepTime = 10000
-  //   console.log(`sleep for ${sleepTime} ms`)
-  //   await sleep('wait to start', sleepTime)
-  // }
 
   // // send the transactions
   // const userKey = '753b7cc01a1a2e86221266a154af739463fce51219d97e4f856cd7200c3bd2a601'
