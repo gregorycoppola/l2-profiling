@@ -167,8 +167,8 @@ async function main() {
   // L1
   const _child2 = spawn_l1()
 
-  const l1_observer = new Observer(60303)
-  const l1_server = l1_observer.makeServer()
+  // const l1_observer = new Observer(60303)
+  // const l1_server = l1_observer.makeServer()
   
   const L1_URL = "http://localhost:20443"
 
