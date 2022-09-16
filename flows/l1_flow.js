@@ -59,6 +59,7 @@ async function publishContract(senderKey, contractName, contractFilename, networ
   const txid = await transactions.broadcastTransaction(
     transaction, network
   )
+  console.log({txid})
   return '0x' + txid.txid
 }
 
@@ -121,7 +122,7 @@ function spawn_l1() {
 
 /// Wait for the stacks height to be positive.
 async function waitForStacksHeight(network_url, observer) {
-   waitForStacksHeight_internal(network_url, observer, 1)
+   await waitForStacksHeight_internal(network_url, observer, 1)
 }
 
 async function waitForStacksHeight_internal(network_url, observer, min_height) {
@@ -131,12 +132,51 @@ async function waitForStacksHeight_internal(network_url, observer, min_height) {
     const transactions = observer.transactions_seen_fn()
     info_log(`got number of transactions is ${transactions.length}`)
     if (transactions.length >= min_height) {
+      info_log(`found a transaction, waking up!`)
       return
     }
 
     info_log('waiting')
     await sleep('wait to start', 4000)
 
+  }
+}
+
+async function waitForTransaction(observer, targetTx, reason) {
+  await waitForTransaction_internal(observer, targetTx, reason, true)
+}
+
+async function waitForTransaction_quiet(observer, targetTx, reason) {
+  await waitForTransaction_internal(observer, targetTx, reason, false)
+}
+
+async function waitForTransaction_internal(observer, targetTx, reason, printOutput) {
+  if (printOutput) {
+    info_log(`wait for transaction ${targetTx} ${reason}`)
+  }
+
+  while (true) {
+    const transactions = observer.transactions_seen_fn()
+    var tx_ids = []
+    for (const transaction of transactions) {
+      tx_ids.push(transaction.txid)
+    }
+    for (const transaction of transactions) {
+      if (transaction.txid == targetTx) {
+        if (printOutput) {
+          info_log(`found transaction ${targetTx} ${reason}`)
+        }
+
+        if (transaction.status != 'success') {
+          if (printOutput) {
+            info_log(`transaction unsuccessful ${transaction} ${reason}`)
+          }
+          exit(1)
+        }
+        return true
+      }
+    }
+    await sleep(`wait for tx ${targetTx} ${reason}`, 2000)
   }
 }
 
@@ -150,12 +190,14 @@ async function main() {
   await waitForStacksHeight(L1_URL, l1_observer)
 
 
-  // // send the transactions
-  // const userKey = '753b7cc01a1a2e86221266a154af739463fce51219d97e4f856cd7200c3bd2a601'
-  // const userAddr = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM'
-  // const userPublish0id = await publishContract(userKey, 'trait-standards', '../contracts/trait-standards.clar', L1_URL, 0)
-  // const userPublish1id = await publishContract(userKey, 'simple-nft', '../contracts/simple-nft.clar', L1_URL, 1)
+  // send the transactions
+  const userKey = '753b7cc01a1a2e86221266a154af739463fce51219d97e4f856cd7200c3bd2a601'
+  const userAddr = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM'
+  const userPublish0id = await publishContract(userKey, 'trait-standards', '../contracts/trait-standards.clar', L1_URL, 0)
+  const userPublish1id = await publishContract(userKey, 'simple-nft', '../contracts/simple-nft.clar', L1_URL, 1)
   
+  await waitForTransaction(l1_observer, userPublish0id, 'user0')
+  await waitForTransaction(l1_observer, userPublish1id, 'user1')
 
   //   // Loop to make the blocks
   //   for (let i = 0; i < 10; i++) { 
