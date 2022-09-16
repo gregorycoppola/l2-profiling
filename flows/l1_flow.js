@@ -8,7 +8,16 @@ import {
   info_log,
 } from './logger.js';
 
-
+import {
+  AnchorMode,
+  makeContractCall,
+  makeContractDeploy,
+  broadcastTransaction,
+  contractPrincipalCV,
+  standardPrincipalCV,
+  stringAsciiCV,
+  uintCV,
+} from '@stacks/transactions';
 import {
   Observer,
 } from './observer.js';
@@ -180,8 +189,65 @@ async function waitForTransaction_internal(observer, targetTx, reason, printOutp
   }
 }
 
+async function hyperchainMintNft(keyInfo, id, nonce, url, userAddr) {
+  const network = new stacks_network.StacksTestnet({url});
+  const senderKey = keyInfo.privateKey;
+  const txOptions = {
+      contractAddress: userAddr,
+      contractName: 'simple-nft-l2',
+      functionName: 'gift-nft',
+      functionArgs: [
+        standardPrincipalCV(keyInfo.address), // recipient
+        uintCV(id), // ID
+      ],
+      senderKey,
+      validateWithAbi: false,
+      network,
+      anchorMode: AnchorMode.Any,
+      fee: 10000,
+      nonce
+  };
+
+  const transaction = await makeContractCall(txOptions);
+  const txid = await broadcastTransaction(
+    transaction, network
+  )
+  return '0x' + txid.txid
+}
+
+function loadKeys() {
+  const fname = `../key-maker/all-keys.txt`
+  const file_contents = readFileSync(fname, { encoding: 'utf-8' });
+  const lines = file_contents.split('\n')
+
+  var buffer = []
+  for (var i = 1; i < lines.length; i++) {
+    try {
+      const line = lines[i].trim();
+      if (line.length == 0) {
+        continue;
+      }
+      const json = JSON.parse(line)
+      buffer.push(json.keyInfo)
+  
+    } catch (error) {
+      info_log(`error in loadKeys: i ${i}, line: "${line}"`)
+    }
+  }
+  return buffer
+}
+
 async function main() {
-  // L1
+  const keyInfos = loadKeys()
+  const num_mints = 10000
+  for (var i = 0; i < num_mints; i++) {
+    const keyInfo = keyInfos[i]
+    if (!keyInfo) {
+      info_log(`problem with key ${i}, keyInfo is ${keyInfo}`)
+      exit(1)
+    }
+  }
+
   const l1_observer = new Observer(60303)
   const l1_server = l1_observer.makeServer()
   
@@ -199,16 +265,18 @@ async function main() {
   await waitForTransaction(l1_observer, userPublish0id, 'user0')
   await waitForTransaction(l1_observer, userPublish1id, 'user1')
 
-  //   // Loop to make the blocks
-  //   for (let i = 0; i < 10; i++) { 
-  //     console.log("create block", {i})
-  //     generate_block()
-  
-  //     const sleepTime = 10000
-  //     console.log(`sleep for ${sleepTime} ms`)
-  //     await sleep('wait to start', sleepTime)
-  //   }
-  
+  var mintIds = []
+  info_log('start submitting mints', {num_mints})
+  l1_observer.stop_showing_mempool_alerts()
+  for (var i = 0; i < num_mints; i++) {
+    const keyInfo = keyInfos[i]
+    if (!keyInfo) {
+      info_log(`problem with key ${i}, keyInfo is ${keyInfo}`)
+      exit(1)
+    }
+    const mintTxid = await hyperchainMintNft(keyInfo, i, 0, L1_URL, userAddr)
+    mintIds.push(mintTxid)
+  }
 }
 
 main()
