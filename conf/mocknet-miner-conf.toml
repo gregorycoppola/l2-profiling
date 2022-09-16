@@ -1,0 +1,36 @@
+[node]
+# working_dir = "/dir/to/save/chainstate"
+rpc_bind = "0.0.0.0:20443"
+p2p_bind = "0.0.0.0:20444"
+seed = "0000000000000000000000000000000000000000000000000000000000000000"
+local_peer_seed = "0000000000000000000000000000000000000000000000000000000000000000"
+miner = true
+wait_time_for_microblocks = 10000
+
+# [[events_observer]]
+# endpoint = "localhost:60303"
+# retry_count = 255
+# events_keys = ["*"]
+
+[burnchain]
+chain = "bitcoin"
+mode = "neon"
+username = "username"
+password = "password"
+
+rpc_port = 18443
+peer_port = 18442
+
+[[ustx_balance]]
+address = "STTAKDFQ15A90V9S6NK66BZMM4X1EGMV29X73DW7"
+amount = 100000000000000
+
+[[ustx_balance]]
+address = "ST1RGEDTEK5B12MKZFRQ3TY40M4DMN62037EBXZVG"
+amount = 100000000000000
+
+
+[[ustx_balance]]
+address = "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM"
+amount = 10000000000000000
+

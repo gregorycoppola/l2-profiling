@@ -149,53 +149,10 @@ async function waitForStacksHeight_internal(network_url, min_height) {
 }
 
 async function main() {
-  // bitcoind
-  const _child1 = spawn_bitcoind()
 
-  console.log('sleeping 1')
-  await sleep('wait to start', 2500)
-  console.log('sleeping 2')
-
-  // L1
-  const _child2 = spawn_l1()
-
-  // const l1_observer = new Observer(60303)
-  // const l1_server = l1_observer.makeServer()
+  const l1_observer = new Observer(60303)
+  const l1_server = l1_observer.makeServer()
   
-  const L1_URL = "http://localhost:20443"
-
-
-  // Loop to make the blocks
-  for (let i = 0; i < 2; i++) { 
-    console.log("create block", {i})
-    generate_block()
-
-    const sleepTime = 10000
-    console.log(`sleep for ${sleepTime} ms`)
-    await sleep('wait to start', sleepTime)
-  }
-
-  await waitForStacksHeight(L1_URL)
-
-
-
-  // // send the transactions
-  // const userKey = '753b7cc01a1a2e86221266a154af739463fce51219d97e4f856cd7200c3bd2a601'
-  // const userAddr = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM'
-  // const L1_URL = "http://localhost:18443"
-  // const userPublish0id = await publishContract(userKey, 'trait-standards', '../contracts/trait-standards.clar', L1_URL, 0)
-  // const userPublish1id = await publishContract(userKey, 'simple-nft', '../contracts/simple-nft.clar', L1_URL, 1)
-  
-
-  //   // Loop to make the blocks
-  //   for (let i = 0; i < 10; i++) { 
-  //     console.log("create block", {i})
-  //     generate_block()
-  
-  //     const sleepTime = 10000
-  //     console.log(`sleep for ${sleepTime} ms`)
-  //     await sleep('wait to start', sleepTime)
-  //   }
   
 }
 
