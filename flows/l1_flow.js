@@ -50,7 +50,7 @@ for (var key in color){
 }
 
 async function publishContract(senderKey, contractName, contractFilename, networkUrl, nonce) {
-  const codeBody = fs.readFileSync(contractFilename, { encoding: 'utf-8' });
+  const codeBody = readFileSync(contractFilename, { encoding: 'utf-8' });
   const transaction = await transactions.makeContractDeploy({
     codeBody, contractName, senderKey, network: new stacks_network.StacksTestnet({url: networkUrl}),
     anchorMode: transactions.AnchorMode.Any, fee: 50000, nonce
@@ -120,69 +120,39 @@ function spawn_l1() {
 }
 
 /// Wait for the stacks height to be positive.
-async function waitForStacksHeight(network_url) {
-  await waitForStacksHeight_internal(network_url, 1)
+async function waitForStacksHeight(network_url, observer) {
+   waitForStacksHeight_internal(network_url, observer, 1)
 }
 
-async function waitForStacksHeight_internal(network_url, min_height) {
+async function waitForStacksHeight_internal(network_url, observer, min_height) {
   info_log(`waiting for: the L2 to make a first block ${min_height}`)
   const query = `${network_url}/v2/info`
   while (true) {
-    try {
-
-      const result = await axios.get(query)
-      const stacks_tip_height = result.data.stacks_tip_height
-    
-      if (stacks_tip_height >= min_height) {
-        info_log("found: the L2 to make a first block")
-        return
-      }
-
-    } catch (error) {
-      console.log('caught error:', {error})
+    const transactions = observer.transactions_seen_fn()
+    info_log(`got number of transactions is ${transactions.length}`)
+    if (transactions.length >= min_height) {
+      return
     }
 
-    info_log("Sleep to wait for stacks height")
-    await sleep(`wait for stacks height`, 12000)
+    info_log('waiting')
+    await sleep('wait to start', 4000)
 
   }
 }
 
 async function main() {
-  // bitcoind
-  const _child1 = spawn_bitcoind()
-
-  console.log('sleeping 1')
-  await sleep('wait to start', 2500)
-  console.log('sleeping 2')
-
   // L1
-  const _child2 = spawn_l1()
-
-  // const l1_observer = new Observer(60303)
-  // const l1_server = l1_observer.makeServer()
+  const l1_observer = new Observer(60303)
+  const l1_server = l1_observer.makeServer()
   
-  const L1_URL = "http://localhost:20443"
+    const L1_URL = "http://localhost:20443"
 
-
-  // Loop to make the blocks
-  for (let i = 0; i < 2; i++) { 
-    console.log("create block", {i})
-    generate_block()
-
-    const sleepTime = 10000
-    console.log(`sleep for ${sleepTime} ms`)
-    await sleep('wait to start', sleepTime)
-  }
-
-  await waitForStacksHeight(L1_URL)
-
+  await waitForStacksHeight(L1_URL, l1_observer)
 
 
   // // send the transactions
   // const userKey = '753b7cc01a1a2e86221266a154af739463fce51219d97e4f856cd7200c3bd2a601'
   // const userAddr = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM'
-  // const L1_URL = "http://localhost:18443"
   // const userPublish0id = await publishContract(userKey, 'trait-standards', '../contracts/trait-standards.clar', L1_URL, 0)
   // const userPublish1id = await publishContract(userKey, 'simple-nft', '../contracts/simple-nft.clar', L1_URL, 1)
   
