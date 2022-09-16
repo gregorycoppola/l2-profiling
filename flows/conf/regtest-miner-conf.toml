@@ -4,8 +4,7 @@ p2p_bind = "0.0.0.0:20444"
 seed = "0000000000000000000000000000000000000000000000000000000000000000"
 local_peer_seed = "0000000000000000000000000000000000000000000000000000000000000000"
 miner = true
- use_test_genesis_chainstate = true
-
+use_test_genesis_chainstate = true
 
 [burnchain]
 chain = "bitcoin"

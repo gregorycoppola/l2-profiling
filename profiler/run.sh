@@ -1,1 +1,1 @@
-node main.js | tee ~/log/listener
+node main.js | tee /log/listener
