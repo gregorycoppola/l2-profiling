@@ -60,6 +60,11 @@ export class Observer {
       res.sendStatus(200);
     })
   
+    app.post('/new_microblocks', (req, res) => {
+      info_log(`${this.port} /new_microblocks`)
+      res.sendStatus(200);
+    })
+
     app.post('/new_mempool_tx', (req, res) => {
       if (this.show_mempool_alerts) {
         info_log(`${this.port} /new_mempool_tx`)
