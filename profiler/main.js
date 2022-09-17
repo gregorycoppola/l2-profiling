@@ -322,15 +322,21 @@ async function main() {
   var mintIds = []
   info_log('start submitting mints', {num_mints})
   l2_observer.stop_showing_mempool_alerts()
-  for (var i = 0; i < num_mints; i++) {
-    const keyInfo = keyInfos[i]
-    if (!keyInfo) {
-      info_log(`problem with key ${i}, keyInfo is ${keyInfo}`)
-      exit(1)
+  const num_rounds = 10;
+  for (var j = 0; j < num_rounds; j++) {
+    for (var i = 0; i < num_mints; i++) {
+      const keyInfo = keyInfos[i]
+      if (!keyInfo) {
+        info_log(`problem with key ${i}, keyInfo is ${keyInfo}`)
+        exit(1)
+      }
+      const id = j * num_mints + i
+      const nonce = j
+      const mintTxid = await hyperchainMintNft(keyInfo, id, nonce)
+      mintIds.push(mintTxid)
     }
-    const mintTxid = await hyperchainMintNft(keyInfo, i, 0)
-    mintIds.push(mintTxid)
   }
+
 
   info_log('start collecting mints', {num_mints})
   while (true) {
