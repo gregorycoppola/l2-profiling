@@ -1,6 +1,4 @@
-// const { spawn } = require('child_process');
 import {spawn} from 'child_process';
-// const axios = require('axios')
 import { default as axios } from 'axios';
 import { readFileSync } from 'fs';
 
@@ -12,24 +10,17 @@ import {
 import {
   Observer,
 } from './observer.js';
-// const fs = require('fs')
-const bitcoind_binary = process.argv[2]
 
-// const observer = require('./observer.js')
-// import {
-//   Observer,
-// } from './observer.js';
+const bitcoind_binary = process.argv[2]
 
 import {
   default as transactions
 } from '@stacks/transactions';
 
 import { default as stacks_network } from '@stacks/network';
-// const stacks_network = require('@stacks/network')
-// const transactions = require('@stacks/transactions')
+
 async function sleep(reason, ms) {
   const promise = new Promise((resolve) => {
-      // info_log(`start to sleep for: ${reason}`)
       setTimeout(resolve, ms);
   });
 
@@ -48,6 +39,10 @@ color.white = "\x1b[37m";
 for (var key in color){
    console.log( color[key] + key);
 }
+
+// Take these settings from Matt's regtest setup.
+const MINER_BTC_ADDR = 'miEJtNKa3ASpA19v5ZhvbKTEieYjLpzCYT'
+const MINER_BTC_PK = '9e446f6b0c6a96cf2190e54bcd5a8569c3e386f091605499464389b8d4e0bfc201'
 
 async function publishContract(senderKey, contractName, contractFilename, networkUrl, nonce) {
   const codeBody = fs.readFileSync(contractFilename, { encoding: 'utf-8' });
@@ -68,7 +63,7 @@ async function generate_block() {
   try {
     const generate_result = await axios.post('http://127.0.0.1:18443/', {
       method: "generatetoaddress",
-      params: [1, 'mkHS9ne12qx9pS9VojpwU5xtRd4T7X7ZUt'],  // random BTC address
+      params: [1, MINER_BTC_ADDR],
       id: 'curltest',
       jsonrpc: '2.0',
     },
