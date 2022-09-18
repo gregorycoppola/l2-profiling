@@ -106,7 +106,7 @@ function spawn_l1() {
   const child = spawn('/home/greg/main1/target/release/stacks-node',
     [
       'start',
-      '--config=conf/regtest-miner-conf.toml',
+      '--config=conf/stacks-krypton-miner.toml',
     ],
     {
       env: {
