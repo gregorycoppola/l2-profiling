@@ -112,7 +112,7 @@ async function hyperchainMintNft(keyInfo, id, nonce) {
       validateWithAbi: false,
       network,
       anchorMode: AnchorMode.Any,
-      fee: 10000,
+      fee: 10000 + 10 * id,
       nonce
   };
 
