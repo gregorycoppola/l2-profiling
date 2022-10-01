@@ -309,7 +309,7 @@ const userAddr = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM'
 
 async function main() {
   const keyInfos = loadKeys()
-  const num_users = 4000
+  const num_users = 100
   for (var i = 0; i < num_users; i++) {
     const keyInfo = keyInfos[i]
     if (!keyInfo) {
