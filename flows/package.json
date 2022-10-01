@@ -13,6 +13,7 @@
     "@stacks/network": "^4.3.5",
     "@stacks/transactions": "^4.3.5",
     "axios": "^0.27.2",
-    "express": "^4.18.1"
+    "express": "^4.18.1",
+    "fs": "^0.0.1-security"
   }
 }

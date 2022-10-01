@@ -69,7 +69,7 @@ async function generate_block() {
   try {
     const generate_result = await axios.post('http://127.0.0.1:18443/', {
       method: "generatetoaddress",
-      params: [1, 'mkHS9ne12qx9pS9VojpwU5xtRd4T7X7ZUt'],  // random BTC address
+      params: [1, 'mtFzK54XtpktHj7fKonFExEPEGkUMsiXdy'],  // random BTC address
       id: 'curltest',
       jsonrpc: '2.0',
     },
@@ -88,8 +88,85 @@ async function generate_block() {
   }
 }
 
+
+async function create_wallet() {
+
+  console.log('create_wallet')
+  try {
+    const create_wallet_result = await axios.post('http://127.0.0.1:18443/', {
+      method: "createwallet",
+      params: [''],  // random BTC address
+      id: 'curltest',
+      jsonrpc: '2.0',
+    },
+    {
+      auth: {
+        username: 'username',
+        password: 'password',  
+      }
+    })
+    console.log({create_wallet_result})
+
+  }
+  catch (error) {
+
+    console.log({error, response:error.response, inner_error: error.response.data.error})
+  }
+}
+
+async function import_address() {
+
+  console.log('importaddress')
+  try {
+    const import_wallet_result = await axios.post('http://127.0.0.1:18443/', {
+      method: "importaddress",
+      params: ['mtFzK54XtpktHj7fKonFExEPEGkUMsiXdy'],  // random BTC address
+      // params: ['mtFzK54XtpktHj7fKonFExEPEGkUMsiXd'],  // random BTC address
+      id: 'curltest',
+      jsonrpc: '2.0',
+    },
+    {
+      auth: {
+        username: 'username',
+        password: 'password',  
+      }
+    })
+    console.log({import_wallet_result})
+
+  }
+  catch (error) {
+
+    console.log({error, response:error.response, inner_error: error.response.data.error})
+  }
+}
+
 function spawn_bitcoind() {
   const child = spawn(bitcoind_binary, ['-port=18442', '-rpcport=18443']);
+
+  child.stdout.on('data', data => {
+    const trimmed = data.toString().trim()
+    console.log(color.yellow + `${trimmed}`);
+  });
+
+  child.stderr.on('data', data => {
+    console.error(`${data}`);
+  });
+
+  return child
+}
+
+function spawn_l1() {
+  const child = spawn('/home/greg/main1/target/release/stacks-node',
+    [
+      'start',
+      '--config=conf/regtest-miner-conf.toml',
+    ],
+    {
+      env: {
+        STACKS_LOG_DEBUG: 0,
+      }
+    },
+  );
 
   child.stdout.on('data', data => {
     const trimmed = data.toString().trim()
@@ -99,22 +176,6 @@ function spawn_bitcoind() {
   child.stderr.on('data', data => {
     const trimmed = data.toString().trim()
     console.log(color.cyan + `${trimmed}`);
-  });
-
-  return child
-}
-
-function spawn_l1() {
-  const child = spawn('/Users/greg/main1/target/release/stacks-node', ['start', '--config=/Users/greg/main1/testnet/stacks-node/conf/mocknet-miner-conf.toml']);
-
-  child.stdout.on('data', data => {
-    const trimmed = data.toString().trim()
-    console.log(`${trimmed}`);
-  });
-
-  child.stderr.on('data', data => {
-    const trimmed = data.toString().trim()
-    console.log(color.blue + `${trimmed}`);
   });
 
   return child
@@ -136,7 +197,7 @@ async function waitForStacksHeight_internal(network_url, observer, min_height) {
       return
     }
 
-    info_log('waiting')
+    // info_log('waiting')
     await sleep('wait to start', 4000)
 
   }
@@ -196,8 +257,8 @@ async function main() {
   const userPublish0id = await publishContract(userKey, 'trait-standards', '../contracts/trait-standards.clar', L1_URL, 0)
   const userPublish1id = await publishContract(userKey, 'simple-nft', '../contracts/simple-nft.clar', L1_URL, 1)
   
-  await waitForTransaction(l1_observer, userPublish0id, 'user0')
-  await waitForTransaction(l1_observer, userPublish1id, 'user1')
+  await waitForTransaction_quiet(l1_observer, userPublish0id, 'user0')
+  await waitForTransaction_quiet(l1_observer, userPublish1id, 'user1')
 
   //   // Loop to make the blocks
   //   for (let i = 0; i < 10; i++) { 
