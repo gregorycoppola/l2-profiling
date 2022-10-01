@@ -8,6 +8,17 @@ import {
   info_log,
 } from './logger.js';
 
+import {
+  AnchorMode,
+  makeContractCall,
+  makeContractDeploy,
+  broadcastTransaction,
+  contractPrincipalCV,
+  standardPrincipalCV,
+  stringAsciiCV,
+  uintCV,
+} from '@stacks/transactions';
+import { StacksTestnet } from '@stacks/network';
 
 import {
   Observer,
@@ -191,7 +202,7 @@ async function waitForStacksHeight_internal(network_url, observer, min_height) {
   const query = `${network_url}/v2/info`
   while (true) {
     const transactions = observer.transactions_seen_fn()
-    info_log(`got number of transactions is ${transactions.length}`)
+    // info_log(`got number of transactions is ${transactions.length}`)
     if (transactions.length >= min_height) {
       info_log(`found a transaction, waking up!`)
       return
@@ -241,34 +252,121 @@ async function waitForTransaction_internal(observer, targetTx, reason, printOutp
   }
 }
 
+function loadKeys() {
+  const fname = `../key-maker/all-keys.txt`
+  const file_contents = readFileSync(fname, { encoding: 'utf-8' });
+  const lines = file_contents.split('\n')
+
+  var buffer = []
+  for (var i = 1; i < lines.length; i++) {
+    try {
+      const line = lines[i].trim();
+      if (line.length == 0) {
+        continue;
+      }
+      const json = JSON.parse(line)
+      buffer.push(json.keyInfo)
+  
+    } catch (error) {
+      info_log(`error in loadKeys: i ${i}, line: "${line}"`)
+    }
+  }
+  return buffer
+}
+
+async function hyperchainMintNft(keyInfo, id, nonce) {
+  const network = new StacksTestnet({url: L1_URL});
+  const senderKey = keyInfo.privateKey;
+  const txOptions = {
+      contractAddress: userAddr,
+      contractName: 'simple-nft',
+      functionName: 'gift-nft',
+      functionArgs: [
+        standardPrincipalCV(keyInfo.address), // recipient
+        uintCV(id), // ID
+      ],
+      senderKey,
+      validateWithAbi: false,
+      network,
+      anchorMode: AnchorMode.Any,
+      fee: 10000 + 10 * id,
+      nonce
+  };
+
+  const transaction = await makeContractCall(txOptions);
+  const txid = await broadcastTransaction(
+    transaction, network
+  )
+  return '0x' + txid.txid
+}
+
+const L1_URL = "http://localhost:20443"
+
+const userKey = '753b7cc01a1a2e86221266a154af739463fce51219d97e4f856cd7200c3bd2a601'
+const userAddr = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM'
+
 async function main() {
+  const keyInfos = loadKeys()
+  const num_mints = 10000
+  for (var i = 0; i < num_mints; i++) {
+    const keyInfo = keyInfos[i]
+    if (!keyInfo) {
+      info_log(`problem with key ${i}, keyInfo is ${keyInfo}`)
+      exit(1)
+    }
+  }
+
   // L1
   const l1_observer = new Observer(60303)
   const l1_server = l1_observer.makeServer()
   
-    const L1_URL = "http://localhost:20443"
-
   await waitForStacksHeight(L1_URL, l1_observer)
 
-
   // send the transactions
-  const userKey = '753b7cc01a1a2e86221266a154af739463fce51219d97e4f856cd7200c3bd2a601'
-  const userAddr = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM'
+
   const userPublish0id = await publishContract(userKey, 'trait-standards', '../contracts/trait-standards.clar', L1_URL, 0)
   const userPublish1id = await publishContract(userKey, 'simple-nft', '../contracts/simple-nft.clar', L1_URL, 1)
   
   await waitForTransaction(l1_observer, userPublish0id, 'user0')
   await waitForTransaction(l1_observer, userPublish1id, 'user1')
 
-  //   // Loop to make the blocks
-  //   for (let i = 0; i < 10; i++) { 
-  //     console.log("create block", {i})
-  //     generate_block()
-  
-  //     const sleepTime = 10000
-  //     console.log(`sleep for ${sleepTime} ms`)
-  //     await sleep('wait to start', sleepTime)
-  //   }
+  var mintIds = []
+  info_log('start submitting mints', {num_mints})
+  l1_observer.stop_showing_mempool_alerts()
+  const num_rounds = 10;
+  for (var j = 0; j < num_rounds; j++) {
+    for (var i = 0; i < num_mints; i++) {
+      const keyInfo = keyInfos[i]
+      if (!keyInfo) {
+        info_log(`problem with key ${i}, keyInfo is ${keyInfo}`)
+        exit(1)
+      }
+      const id = j * num_mints + i
+      const nonce = j
+      const mintTxid = await hyperchainMintNft(keyInfo, id, nonce)
+      mintIds.push(mintTxid)
+    }
+  }
+
+  info_log('start collecting mints', {num_mints})
+  while (true) {
+    const finished_transactions = l1_observer.transactions_id_set()
+    var transactionsProcessed = 0
+    var transactionsOutstanding = 0
+    for (const mintId of mintIds) {
+      if (finished_transactions.has(mintId)) {
+        transactionsProcessed += 1
+      } else {
+        transactionsOutstanding += 1
+      }
+    }
+    // info_log(`processing update: transactionsProcessed ${transactionsProcessed} transactionsOutstanding ${transactionsOutstanding}`)
+    await sleep(`endless loop`, 10000)
+
+    if (transactionsProcessed == mintIds.length) {
+      break
+    }
+  }
   
 }
 
