@@ -20,6 +20,8 @@ import {
 } from '@stacks/transactions';
 import { StacksTestnet } from '@stacks/network';
 
+import { exit } from 'node:process';
+
 import {
   Observer,
 } from './observer.js';
@@ -253,7 +255,7 @@ async function waitForTransaction_internal(observer, targetTx, reason, printOutp
 }
 
 function loadKeys() {
-  const fname = `../key-maker/all-keys.txt`
+  const fname = `../key-maker/all-testnet-keys.txt`
   const file_contents = readFileSync(fname, { encoding: 'utf-8' });
   const lines = file_contents.split('\n')
 
@@ -307,8 +309,8 @@ const userAddr = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM'
 
 async function main() {
   const keyInfos = loadKeys()
-  const num_mints = 10000
-  for (var i = 0; i < num_mints; i++) {
+  const num_users = 4000
+  for (var i = 0; i < num_users; i++) {
     const keyInfo = keyInfos[i]
     if (!keyInfo) {
       info_log(`problem with key ${i}, keyInfo is ${keyInfo}`)
@@ -331,24 +333,24 @@ async function main() {
   await waitForTransaction(l1_observer, userPublish1id, 'user1')
 
   var mintIds = []
-  info_log('start submitting mints', {num_mints})
+  info_log('start submitting mints', {num_mints: num_users})
   l1_observer.stop_showing_mempool_alerts()
   const num_rounds = 10;
   for (var j = 0; j < num_rounds; j++) {
-    for (var i = 0; i < num_mints; i++) {
+    for (var i = 0; i < num_users; i++) {
       const keyInfo = keyInfos[i]
       if (!keyInfo) {
         info_log(`problem with key ${i}, keyInfo is ${keyInfo}`)
         exit(1)
       }
-      const id = j * num_mints + i
+      const id = j * num_users + i
       const nonce = j
       const mintTxid = await hyperchainMintNft(keyInfo, id, nonce)
       mintIds.push(mintTxid)
     }
   }
 
-  info_log('start collecting mints', {num_mints})
+  info_log('start collecting mints', {num_mints: num_users})
   while (true) {
     const finished_transactions = l1_observer.transactions_id_set()
     var transactionsProcessed = 0
@@ -360,14 +362,17 @@ async function main() {
         transactionsOutstanding += 1
       }
     }
-    // info_log(`processing update: transactionsProcessed ${transactionsProcessed} transactionsOutstanding ${transactionsOutstanding}`)
-    await sleep(`endless loop`, 10000)
 
     if (transactionsProcessed == mintIds.length) {
       break
     }
+    info_log(`processing update: transactionsProcessed ${transactionsProcessed} transactionsOutstanding ${transactionsOutstanding}`)
+    await sleep(`endless loop`, 10000)
+
   }
   
+  info_log('all mints are in!')
+  exit(1)
 }
 
 main()
