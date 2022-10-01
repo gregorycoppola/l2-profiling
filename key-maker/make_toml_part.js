@@ -5,7 +5,7 @@ const file_contents = fs.readFileSync(fname, { encoding: 'utf-8' });
 const lines = file_contents.split('\n')
 
 var buffer = []
-for (var i = 1; i < lines.length; i++) {
+for (var i = 0; i < lines.length; i++) {
     try {
         const line = lines[i].trim();
         if (line.length == 0) {
