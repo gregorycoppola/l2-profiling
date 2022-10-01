@@ -257,8 +257,8 @@ async function main() {
   const userPublish0id = await publishContract(userKey, 'trait-standards', '../contracts/trait-standards.clar', L1_URL, 0)
   const userPublish1id = await publishContract(userKey, 'simple-nft', '../contracts/simple-nft.clar', L1_URL, 1)
   
-  await waitForTransaction_quiet(l1_observer, userPublish0id, 'user0')
-  await waitForTransaction_quiet(l1_observer, userPublish1id, 'user1')
+  await waitForTransaction(l1_observer, userPublish0id, 'user0')
+  await waitForTransaction(l1_observer, userPublish1id, 'user1')
 
   //   // Loop to make the blocks
   //   for (let i = 0; i < 10; i++) { 
