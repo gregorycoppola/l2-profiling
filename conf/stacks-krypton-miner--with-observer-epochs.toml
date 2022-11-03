@@ -1,0 +1,118 @@
+[node]
+name = "krypton-node"
+rpc_bind = "0.0.0.0:20443"
+p2p_bind = "0.0.0.0:20444"
+# working_dir = "$DATA_DIR"
+
+seed = "9e446f6b0c6a96cf2190e54bcd5a8569c3e386f091605499464389b8d4e0bfc201"
+local_peer_seed = "9e446f6b0c6a96cf2190e54bcd5a8569c3e386f091605499464389b8d4e0bfc201"
+
+miner = true
+use_test_genesis_chainstate = true
+pox_sync_sample_secs = 5
+wait_time_for_blocks = 0
+wait_time_for_microblocks = 1000
+microblock_frequency = 5000
+# mine_microblocks = true
+# max_microblocks = 10
+#
+[[events_observer]]
+endpoint = "localhost:50303"
+retry_count = 255
+events_keys = ["*"]
+
+[miner]
+first_attempt_time_ms = 30000
+subsequent_attempt_time_ms = 5000
+block_reward_recipient = "ST9V4MGBMGHX0WR3MG6JA53HNKMJ2HF9VWRQNTKR"
+
+[connection_options]
+# inv_sync_interval = 10
+# download_interval = 10
+# walk_interval = 10
+disable_block_download = true
+disable_inbound_handshakes = true
+disable_inbound_walks = true
+public_ip_address = "1.1.1.1:1234"
+
+[burnchain]
+chain = "bitcoin"
+mode = "krypton"
+poll_time_secs = 1
+pox_2_activation = 107
+
+### bitcoind-regtest connection info
+peer_host = "127.0.0.1"
+peer_port = 18444
+rpc_port = 18443
+rpc_ssl = false
+username = "krypton"
+password = "krypton"
+timeout = 30
+
+[[burnchain.epochs]]
+epoch_name = "1.0"
+start_height = 0
+
+[[burnchain.epochs]]
+epoch_name = "2.0"
+start_height = 105
+
+[[burnchain.epochs]]
+epoch_name = "2.05"
+start_height = 106
+
+[[burnchain.epochs]]
+epoch_name = "2.1"
+start_height = 107
+
+
+[[ustx_balance]]
+address = "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM"
+amount = 10000000000000000
+
+
+[[ustx_balance]]
+address = "ST2M5ZS49S6N0N14XBAGF72PRNZ560NMRSM8QQAPF"
+amount = 10000000000000000
+
+
+[[ustx_balance]]
+address = "ST383ESB868ZEG3ZQFE2KDAGQG9M7T8BA0CYGJYK5"
+amount = 10000000000000000
+
+
+[[ustx_balance]]
+address = "ST74FPE53M5FV30CK4MD3ZWPJZEYBZ6P41PQG3EY"
+amount = 10000000000000000
+
+
+[[ustx_balance]]
+address = "ST2QK35491K9CJCEP35QB1DDGSMRT01GN87Q2HCB7"
+amount = 10000000000000000
+
+
+[[ustx_balance]]
+address = "ST3EMFE974Y6SY02Z8WCJAQ7427SYCFY8KZAJN5HT"
+amount = 10000000000000000
+
+
+[[ustx_balance]]
+address = "ST25VAV6RPD17YNTNZWJHCM5K0VP5Z8GFQQVBXWH5"
+amount = 10000000000000000
+
+
+[[ustx_balance]]
+address = "ST3JN62QP1S4N2PY9MXJG2FYXXT44F9RRC2GWD9SE"
+amount = 10000000000000000
+
+
+[[ustx_balance]]
+address = "ST3V7NFZKHK8XZJ5RWZSJKQBKKP7TRJY39963XSQZ"
+amount = 10000000000000000
+
+
+[[ustx_balance]]
+address = "ST2H2E21TZET4RAR4RMG8Z0434C041NVRX1GXQQ27"
+amount = 10000000000000000
+
