@@ -15,6 +15,11 @@ wait_time_for_microblocks = 1000
 microblock_frequency = 5000
 # mine_microblocks = true
 # max_microblocks = 10
+#
+[[events_observer]]
+endpoint = "localhost:50303"
+retry_count = 255
+events_keys = ["*"]
 
 [miner]
 first_attempt_time_ms = 30000
