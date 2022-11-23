@@ -279,89 +279,96 @@ function loadKeys() {
 }
 
 async function main() {
-  const keyInfos = loadKeys()
-  const num_mints = 10000
-  for (var i = 0; i < num_mints; i++) {
-    const keyInfo = keyInfos[i]
-    if (!keyInfo) {
-      info_log(`problem with key ${i}, keyInfo is ${keyInfo}`)
-      exit(1)
-    }
-  }
+  // const keyInfos = loadKeys()
+  // const num_mints = 10000
+  // for (var i = 0; i < num_mints; i++) {
+  //   const keyInfo = keyInfos[i]
+  //   if (!keyInfo) {
+  //     info_log(`problem with key ${i}, keyInfo is ${keyInfo}`)
+  //     exit(1)
+  //   }
+  // }
 
-  const l1_observer = new Observer(60303)
-  const l1_server = l1_observer.makeServer()
+  // const l1_observer = new Observer(60303)
+  // const l1_server = l1_observer.makeServer()
 
-  const l2_observer = new Observer(60304)
-  const l2_server = l2_observer.makeServer()
+  // const l2_observer = new Observer(60304)
+  // const l2_server = l2_observer.makeServer()
 
-  await sleep(`wait to start`, 5000)
+  // await sleep(`wait to start`, 5000)
 
-  const minerPublish0id = await publishContract(PK_MINER, 'trait-standards', '../contracts/trait-standards.clar', L1_URL, 0)
-  const minerPublish1id = await publishContract(PK_MINER, 'hc-alpha', '../contracts/hyperchains.clar', L1_URL, 1)
+  // const minerPublish0id = await publishContract(PK_MINER, 'trait-standards', '../contracts/trait-standards.clar', L1_URL, 0)
+  // const minerPublish1id = await publishContract(PK_MINER, 'hc-alpha', '../contracts/hyperchains.clar', L1_URL, 1)
 
-  await waitForTransaction(l1_observer, minerPublish0id, 'minerPublish0id')
-  await waitForTransaction(l1_observer, minerPublish1id, 'minerPublish1id')  
+  // console.log({minerPublish0id, minerPublish1id})
+  // // await waitForTransaction(l1_observer, minerPublish0id, 'minerPublish0id')
+  // // await waitForTransaction(l1_observer, minerPublish1id, 'minerPublish1id')  
 
-  const userPublish0id = await publishContract(userKey, 'trait-standards', '../contracts/trait-standards.clar', L1_URL, 0)
-  const userPublish1id = await publishContract(userKey, 'simple-nft-l1', '../contracts/simple-nft.clar', L1_URL, 1)
-  await waitForTransaction(l1_observer, userPublish0id, 'userPublish0id')
-  await waitForTransaction(l1_observer, userPublish1id, 'userPublish1id')
+  // await sleep(`wait to start`, 5000)
+
+  // const userPublish0id = await publishContract(userKey, 'trait-standards', '../contracts/trait-standards.clar', L1_URL, 0)
+  // const userPublish1id = await publishContract(userKey, 'simple-nft-l1', '../contracts/simple-nft.clar', L1_URL, 1)
+  // console.log({userPublish0id, userPublish1id})
+
+  // await waitForTransaction(l1_observer, userPublish0id, 'userPublish0id')
+  // await waitForTransaction(l1_observer, userPublish1id, 'userPublish1id')
 
   const miner_register_nonce = await getNextNonce(ADDR_MINER, L1_URL)
 
+  console.log({miner_register_nonce})
   const registerTxid = await registerNft(PK_MINER, miner_register_nonce)
-  await waitForTransaction(l1_observer, registerTxid, 'registerTxid')
+  console.log({registerTxid})
+  // await waitForTransaction(l1_observer, registerTxid, 'registerTxid')
 
-  await waitForStacksHeight(L2_URL)
+  // await waitForStacksHeight(L2_URL)
 
-  const userPublish2id = await publishContract(userKey, 'trait-standards', '../contracts-l2/trait-standards.clar', L2_URL, 0)
-  const userPublish3id = await publishContract(userKey, 'simple-nft-l2', '../contracts-l2/simple-nft-l2.clar', L2_URL, 1)
+  // const userPublish2id = await publishContract(userKey, 'trait-standards', '../contracts-l2/trait-standards.clar', L2_URL, 0)
+  // const userPublish3id = await publishContract(userKey, 'simple-nft-l2', '../contracts-l2/simple-nft-l2.clar', L2_URL, 1)
 
-  await waitForTransaction(l2_observer, userPublish2id, 'user2')
-  await waitForTransaction(l2_observer, userPublish3id, 'user3')
+  // await waitForTransaction(l2_observer, userPublish2id, 'user2')
+  // await waitForTransaction(l2_observer, userPublish3id, 'user3')
 
-  var mintIds = []
-  info_log('start submitting mints', {num_mints})
-  l2_observer.stop_showing_mempool_alerts()
-  const num_rounds = 10;
-  for (var j = 0; j < num_rounds; j++) {
-    for (var i = 0; i < num_mints; i++) {
-      const keyInfo = keyInfos[i]
-      if (!keyInfo) {
-        info_log(`problem with key ${i}, keyInfo is ${keyInfo}`)
-        exit(1)
-      }
-      const id = j * num_mints + i
-      const nonce = j
-      const mintTxid = await hyperchainMintNft(keyInfo, id, nonce)
-      mintIds.push(mintTxid)
-    }
-  }
+  // var mintIds = []
+  // info_log('start submitting mints', {num_mints})
+  // l2_observer.stop_showing_mempool_alerts()
+  // const num_rounds = 10;
+  // for (var j = 0; j < num_rounds; j++) {
+  //   for (var i = 0; i < num_mints; i++) {
+  //     const keyInfo = keyInfos[i]
+  //     if (!keyInfo) {
+  //       info_log(`problem with key ${i}, keyInfo is ${keyInfo}`)
+  //       exit(1)
+  //     }
+  //     const id = j * num_mints + i
+  //     const nonce = j
+  //     const mintTxid = await hyperchainMintNft(keyInfo, id, nonce)
+  //     mintIds.push(mintTxid)
+  //   }
+  // }
 
 
-  info_log('start collecting mints', {num_mints})
-  while (true) {
-    const finished_transactions = l2_observer.transactions_id_set()
-    var transactionsProcessed = 0
-    var transactionsOutstanding = 0
-    for (const mintId of mintIds) {
-      if (finished_transactions.has(mintId)) {
-        transactionsProcessed += 1
-      } else {
-        transactionsOutstanding += 1
-      }
-    }
-    // info_log(`processing update: transactionsProcessed ${transactionsProcessed} transactionsOutstanding ${transactionsOutstanding}`)
-    await sleep(`endless loop`, 10000)
+  // info_log('start collecting mints', {num_mints})
+  // while (true) {
+  //   const finished_transactions = l2_observer.transactions_id_set()
+  //   var transactionsProcessed = 0
+  //   var transactionsOutstanding = 0
+  //   for (const mintId of mintIds) {
+  //     if (finished_transactions.has(mintId)) {
+  //       transactionsProcessed += 1
+  //     } else {
+  //       transactionsOutstanding += 1
+  //     }
+  //   }
+  //   // info_log(`processing update: transactionsProcessed ${transactionsProcessed} transactionsOutstanding ${transactionsOutstanding}`)
+  //   await sleep(`endless loop`, 10000)
 
-    if (transactionsProcessed == mintIds.length) {
-      break
-    }
-  }
+  //   if (transactionsProcessed == mintIds.length) {
+  //     break
+  //   }
+  // }
 
-  console.log("Exiting the process.")
-  exit(1)
+  // console.log("Exiting the process.")
+  // exit(1)
 }
 
 main()
