@@ -234,7 +234,7 @@ async function getNextNonce(principal, network_url) {
 
 /// Wait for the stacks height to be positive.
 async function waitForStacksHeight(network_url) {
-  info_log("waiting for: the L2 to make a first block")
+  info_log(`waiting for: ${network_url} to make a first block`)
   const query = `${network_url}/v2/info`
   while (true) {
     try {
@@ -251,7 +251,7 @@ async function waitForStacksHeight(network_url) {
       console.log('caught error:', {error})
     }
 
-    await sleep(`wait for stacks height`, 12000)
+    await sleep(`wait for stacks height`, 4000)
 
   }
 }
@@ -296,6 +296,8 @@ async function main() {
   // const l2_server = l2_observer.makeServer()
 
   // await sleep(`wait to start`, 5000)
+
+  await waitForStacksHeight(L1_URL)
 
   const minerPublish0id = await publishContract(PK_MINER, 'trait-standards', '../contracts/trait-standards.clar', L1_URL, 0)
   const minerPublish1id = await publishContract(PK_MINER, 'hc-alpha', '../contracts/hyperchains.clar', L1_URL, 1)
