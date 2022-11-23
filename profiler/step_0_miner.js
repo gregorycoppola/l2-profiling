@@ -299,8 +299,9 @@ async function main() {
 
   const minerPublish0id = await publishContract(PK_MINER, 'trait-standards', '../contracts/trait-standards.clar', L1_URL, 0)
   const minerPublish1id = await publishContract(PK_MINER, 'hc-alpha', '../contracts/hyperchains.clar', L1_URL, 1)
-
   console.log({minerPublish0id, minerPublish1id})
+
+  // console.log({minerPublish1id})
   // // await waitForTransaction(l1_observer, minerPublish0id, 'minerPublish0id')
   // // await waitForTransaction(l1_observer, minerPublish1id, 'minerPublish1id')  
 
